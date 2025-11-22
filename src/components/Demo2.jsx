@@ -10,7 +10,7 @@ import ChatUI from "./ChatUI";
 
 const SERVER_URL = 'https://192.168.1.5:4000'; // change if backend elsewhere
 
-export default function Demo2() {
+export default function Demo2({ navigate }) {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const pcRef = useRef(null);
@@ -43,6 +43,9 @@ export default function Demo2() {
       setStatus('Waiting for partner...');
     });
 
+    socketRef.current.on("tab-change", ({ tab }) => {
+      navigate(tab);
+    });
     socketRef.current.on('matched', async ({ peerId }) => {
       setStatus('Matched with ' + peerId);
       setMatchedPeer(peerId);
@@ -237,11 +240,21 @@ export default function Demo2() {
     {/* RIGHT SIDE (Sandbox with Router) */}
     <div className="flex-1 bg-gray-50 rounded-xl shadow-inner">
       <Routes>
-        <Route path="/" element={<SandboxLayout />}>
+        <Route
+          path="/"
+          element={
+            <SandboxLayout
+              socketRef={socketRef}
+              matchedPeer={matchedPeer}
+            />
+          }
+        >
           <Route
             path="chat"
             element={
               <ChatUI
+                socketRef={socketRef}
+                matchedPeer={matchedPeer}
                 messages={messages}
                 chatInput={chatInput}
                 setChatInput={setChatInput}
@@ -250,6 +263,7 @@ export default function Demo2() {
               />
             }
           />
+
           <Route
             path="youtube"
             element={

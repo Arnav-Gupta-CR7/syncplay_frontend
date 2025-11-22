@@ -1,38 +1,47 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useNavigate, Outlet } from "react-router-dom";
+import { useEffect } from "react";
 
-export default function SandboxLayout() {
+export default function SandboxLayout({ socketRef, matchedPeer }) {
+  const navigate = useNavigate();
+
+  function switchTab(tab) {
+    navigate(tab);
+
+    // notify peer
+    if (matchedPeer) {
+      socketRef.current.emit("tab-change", {
+        to: matchedPeer,
+        tab,
+      });
+    }
+  }
+
   return (
     <div className="flex flex-col w-full h-full">
 
       {/* Header */}
       <div className="flex gap-4 border-b p-3 bg-white">
-        <NavLink
-          to="chat"
-          className={({ isActive }) =>
-            `px-4 py-2 rounded-lg text-sm font-medium ${
-              isActive ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
-            }`
-          }
+        
+        <button
+          onClick={() => switchTab("chat")}
+          className="px-4 py-2 rounded-lg bg-gray-100"
         >
           Chat
-        </NavLink>
+        </button>
 
-        <NavLink
-          to="youtube"
-          className={({ isActive }) =>
-            `px-4 py-2 rounded-lg text-sm font-medium ${
-              isActive ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
-            }`
-          }
+        <button
+          onClick={() => switchTab("youtube")}
+          className="px-4 py-2 rounded-lg bg-gray-100"
         >
           YouTube Together
-        </NavLink>
+        </button>
+
       </div>
 
-      {/* Routed Content */}
       <div className="flex-1 p-4 overflow-y-auto">
         <Outlet />
       </div>
+
     </div>
   );
 }

@@ -11,7 +11,7 @@ async function fetchYTSearch(q) {
 }
 
 
-export default function YouTubeTogether({ socketRef, matchedPeer, initialVideoId = 'dQw4w9WgXcQ' }) {
+export default function YouTubeTogether({ socketRef, matchedPeer, initialVideoId = 'KflMqooMzF8' }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);

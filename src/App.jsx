@@ -1,16 +1,21 @@
 import { useState } from 'react'
 import Demo1 from './Demo1'
 import Demo2 from './components/Demo2'
-import { BrowserRouter} from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+
+function Demo2RouterWrapper() {
+  const navigate = useNavigate();
+
+  return <Demo2 navigate={navigate} />;
+}
 
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
     <BrowserRouter>
-      <Demo2/>
+      <Demo2RouterWrapper />
     </BrowserRouter>
     </>
   )
