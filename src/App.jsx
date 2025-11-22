@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Demo1 from './Demo1'
 import Demo2 from './components/Demo2'
+import { BrowserRouter} from "react-router-dom";
 
 
 function App() {
@@ -8,7 +9,9 @@ function App() {
 
   return (
     <>
+    <BrowserRouter>
       <Demo2/>
+    </BrowserRouter>
     </>
   )
 }

@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import YouTubeTogether from './YouTubeTogether';
 
+import { Routes, Route } from "react-router-dom";
+import SandboxLayout from "./SandboxLayout";
+import ChatUI from "./ChatUI";
+
+
+
 const SERVER_URL = 'https://192.168.1.5:4000'; // change if backend elsewhere
 
 export default function Demo2() {
@@ -197,32 +203,71 @@ export default function Demo2() {
   }
 
   return (
+ 
     <div className="min-h-screen flex items-center justify-center p-6 bg-gray-100">
-      <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg p-6 flex gap-6">
+  <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg p-6 flex gap-6">
 
-        <VideoSection
-          localVideoRef={localVideoRef}
-          remoteVideoRef={remoteVideoRef}
-        />
+    {/* LEFT SIDE */}
+    <div className="w-1/3 flex flex-col gap-4">
 
-        <RightPanel
-          messages={messages}
-          chatInput={chatInput}
-          setChatInput={setChatInput}
-          sendMessage={sendMessage}
-          findPartner={findPartner}
-          leave={leave}
-          status={status}
-        />
+      <VideoSection
+        localVideoRef={localVideoRef}
+        remoteVideoRef={remoteVideoRef}
+      />
 
-        { matchedPeer && (
-          <YouTubeTogether socketRef={socketRef} matchedPeer={matchedPeer} />
-        )}
+      {/* Start + Leave Buttons */}
+      <div className="flex gap-3">
+        <button
+          onClick={findPartner}
+          className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl font-semibold shadow"
+        >
+          Start
+        </button>
 
-
+        <button
+          onClick={leave}
+          className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-semibold shadow"
+        >
+          Leave
+        </button>
       </div>
+
     </div>
-  );
+
+    {/* RIGHT SIDE (Sandbox with Router) */}
+    <div className="flex-1 bg-gray-50 rounded-xl shadow-inner">
+      <Routes>
+        <Route path="/" element={<SandboxLayout />}>
+          <Route
+            path="chat"
+            element={
+              <ChatUI
+                messages={messages}
+                chatInput={chatInput}
+                setChatInput={setChatInput}
+                sendMessage={sendMessage}
+                status={status}
+              />
+            }
+          />
+          <Route
+            path="youtube"
+            element={
+              <YouTubeTogether
+                socketRef={socketRef}
+                matchedPeer={matchedPeer}
+              />
+            }
+          />
+        </Route>
+      </Routes>
+    </div>
+
+  </div>
+</div>
+
+ 
+);
 
 
 }
