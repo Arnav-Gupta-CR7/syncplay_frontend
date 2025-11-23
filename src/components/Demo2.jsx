@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import YouTubeTogether from './YouTubeTogether';
+import GameTogether from './GameTogether';
+import MusicTogether from './MusicTogether';
 
 import { Routes, Route } from "react-router-dom";
 import SandboxLayout from "./SandboxLayout";
@@ -249,6 +251,7 @@ export default function Demo2({ navigate }) {
               <SandboxLayout socketRef={socketRef} matchedPeer={matchedPeer} />
             }
           >
+            {/* Chat */}
             <Route
               path="chat"
               element={
@@ -264,6 +267,7 @@ export default function Demo2({ navigate }) {
               }
             />
 
+            {/* YouTube Watch Together */}
             <Route
               path="youtube"
               element={
@@ -273,9 +277,33 @@ export default function Demo2({ navigate }) {
                 />
               }
             />
+
+            {/* 🎮 Game Route */}
+            <Route
+              path="game"
+              element={
+                <GameTogether
+                  socketRef={socketRef}
+                  matchedPeer={matchedPeer}
+                />
+              }
+            />
+
+            {/* 🎵 Music Route */}
+            <Route
+              path="music"
+              element={
+                <MusicTogether
+                  socketRef={socketRef}
+                  matchedPeer={matchedPeer}
+                />
+              }
+            />
+
           </Route>
         </Routes>
       </div>
+
 
     </div>
 

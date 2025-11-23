@@ -1,6 +1,4 @@
-import { useState } from 'react'
-import Demo1 from './Demo1'
-import Demo2 from './components/Demo2'
+import Home from './Home';
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 
 function Demo2RouterWrapper() {
@@ -15,7 +13,7 @@ function App() {
   return (
     <>
     <BrowserRouter>
-      <Demo2RouterWrapper />
+      <Home />
     </BrowserRouter>
     </>
   )
