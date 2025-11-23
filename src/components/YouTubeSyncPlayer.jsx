@@ -192,26 +192,68 @@ export default function YouTubeSyncPlayer({ socketRef, matchedPeer, initialVideo
   }
 
   return (
-    <div className="w-full">
-      <div id={containerId} className="w-full rounded-lg overflow-hidden shadow mb-3" />
-      <div className="flex gap-2 items-center">
-        <button onClick={playForBoth} className="px-3 py-1 bg-green-600 text-white rounded">Play</button>
-        <button onClick={pauseForBoth} className="px-3 py-1 bg-gray-600 text-white rounded">Pause</button>
-        <button onClick={() => seekForBoth(Math.max(0, (playerRef.current?.getCurrentTime() || 0) - 10))} className="px-3 py-1 bg-blue-600 text-white rounded">-10s</button>
-        <button onClick={() => seekForBoth((playerRef.current?.getCurrentTime() || 0) + 10)} className="px-3 py-1 bg-blue-600 text-white rounded">+10s</button>
+  <div className="w-full">
 
-        <div className="ml-4 flex items-center gap-2">
-          <input id="yt-id-input" placeholder="YouTube ID (eg: dQw4w9WgXcQ)" className="px-2 py-1 border rounded" />
-          <button onClick={() => {
+    {/* Player */}
+    <div
+      id={containerId}
+      className="w-full rounded-box overflow-hidden shadow mb-3"
+    />
+
+    {/* Controls */}
+    <div className="flex flex-wrap gap-2 items-center">
+
+      <button onClick={playForBoth} className="btn btn-success btn-sm">
+        ▶ Play
+      </button>
+
+      <button onClick={pauseForBoth} className="btn btn-warning btn-sm">
+        ⏸ Pause
+      </button>
+
+      <button
+        onClick={() =>
+          seekForBoth(
+            Math.max(0, (playerRef.current?.getCurrentTime() || 0) - 10)
+          )
+        }
+        className="btn btn-info btn-sm"
+      >
+        -10s
+      </button>
+
+      <button
+        onClick={() =>
+          seekForBoth((playerRef.current?.getCurrentTime() || 0) + 10)
+        }
+        className="btn btn-info btn-sm"
+      >
+        +10s
+      </button>
+
+      {/* Video ID Loader */}
+      <div className="ml-4 flex items-center gap-2">
+        <input
+          id="yt-id-input"
+          placeholder="YouTube ID"
+          className="input input-bordered input-sm"
+        />
+        <button
+          onClick={() => {
             const id = document.getElementById("yt-id-input")?.value?.trim();
             if (id) changeVideoForBoth(id);
-          }} className="px-2 py-1 bg-indigo-600 text-white rounded">Load for Both</button>
-        </div>
-      </div>
-
-      <div className="text-xs text-gray-500 mt-2">
-        Tip: only works when paired. Use the controls above or native player UI — actions sync automatically.
+          }}
+          className="btn btn-secondary btn-sm"
+        >
+          Load
+        </button>
       </div>
     </div>
-  );
+
+    <p className="text-xs text-gray-500 mt-2">
+      All actions sync automatically with your partner.
+    </p>
+  </div>
+);
+
 }

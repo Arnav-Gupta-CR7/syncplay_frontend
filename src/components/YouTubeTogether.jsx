@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import YouTubeSyncPlayer from './YouTubeSyncPlayer'; // the player you already added (or use the one you used earlier)
 
 
-const SERVER_URL = "https://192.168.1.5:4000"; // same as your signaling server
+const SERVER_URL = "https://192.168.1.6:4000"; // same as your signaling server
 
 async function fetchYTSearch(q) {
   const res = await fetch(`${SERVER_URL}/youtube/search?q=${encodeURIComponent(q)}`);
@@ -133,56 +133,91 @@ export default function YouTubeTogether({ socketRef, matchedPeer, initialVideoId
   }
 
   return (
-    <div className="p-3 bg-white rounded shadow" ref={containerRef} style={{ position: 'relative', width: "100%", height: "100%"  }}>
-      <div style={{ position: 'absolute', pointerEvents: 'none', inset: 0 }}>
-        <div ref={localCursorRef} style={{
-          position: 'absolute',
-          width: 12, height: 12, borderRadius: 6, background: 'rgba(0,128,255,0.9)', top: "0%",left: "0%",transform: 'translate(-50%,-50%)', display: 'block', zIndex: 40
-        }} />
-        <div ref={remoteCursorRef} style={{
-          position: 'absolute',
-          width: 12, height: 12, borderRadius: 6, background: 'rgba(255,80,80,0.95)',  top: "0%",left: "0%",transform: 'translate(-50%,-50%)', display: 'block', zIndex: 40
-        }} />
+  <div
+    className="p-4 bg-base-200 rounded-box shadow relative w-full h-full"
+    ref={containerRef}
+  >
+
+    {/* Cursors */}
+    <div className="absolute inset-0 pointer-events-none">
+      <div
+        ref={localCursorRef}
+        className="absolute w-3 h-3 rounded-full bg-primary z-40"
+        style={{ transform: "translate(-50%, -50%)" }}
+      />
+      <div
+        ref={remoteCursorRef}
+        className="absolute w-3 h-3 rounded-full bg-error z-40"
+        style={{ transform: "translate(-50%, -50%)" }}
+      />
+    </div>
+
+    <div className="flex gap-6">
+      {/* LEFT SIDE: Search + Results */}
+      <div className="flex-1 min-w-[320px]">
+
+        {/* Search Bar */}
+        <div className="flex gap-2 mb-3">
+          <input
+            className="input input-bordered w-full"
+            placeholder="Search YouTube..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && doSearch(query)}
+          />
+          <button className="btn btn-primary" onClick={() => doSearch(query)}>
+            Search
+          </button>
+        </div>
+
+        {/* Results */}
+        <div className="max-h-96 overflow-auto space-y-2">
+
+          {loading && (
+            <div className="text-center py-3">
+              <span className="loading loading-spinner loading-md"></span>
+            </div>
+          )}
+
+          {!loading && results.length === 0 && (
+            <div className="text-xs text-gray-400 text-center">
+              No results yet.
+            </div>
+          )}
+
+          {results.map((it) => (
+            <div
+              key={it.videoId}
+              className="card card-side bg-base-100 shadow hover:bg-base-300 cursor-pointer transition"
+              onClick={() => selectVideo(it.videoId, true)}
+            >
+              <figure>
+                <img
+                  src={it.thumbnails?.default?.url || ""}
+                  className="w-24 h-16 object-cover"
+                />
+              </figure>
+              <div className="card-body p-3">
+                <h2 className="card-title text-sm">{it.title}</h2>
+                <p className="text-xs opacity-60">{it.channelTitle}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="flex gap-4">
-        <div style={{ flex: 1, minWidth: 320 }}>
-          <div className="flex gap-2 mb-2">
-            <input
-              className="flex-1 px-3 py-2 border rounded"
-              placeholder="Search YouTube for videos..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') doSearch(query); }}
-            />
-            <button className="px-3 py-2 bg-blue-600 text-white rounded" onClick={() => doSearch(query)}>Search</button>
-          </div>
+      {/* RIGHT SIDE: Player */}
+      <div className="w-[640px]">
+        <div className="text-sm font-semibold mb-2">Watching Together</div>
 
-          <div className="space-y-2 max-h-96 overflow-auto">
-            {loading && <div>Searching…</div>}
-            {results.map(it => (
-              <div key={it.videoId} className="flex gap-2 items-start p-2 rounded hover:bg-gray-50 cursor-pointer"
-                   onClick={() => selectVideo(it.videoId, true)}>
-                <img src={it.thumbnails?.default?.url || ''} alt="" className="w-24 h-16 object-cover rounded" />
-                <div>
-                  <div className="font-semibold text-sm">{it.title}</div>
-                  <div className="text-xs text-gray-500">{it.channelTitle}</div>
-                </div>
-              </div>
-            ))}
-            {!loading && results.length === 0 && <div className="text-xs text-gray-400">No results yet.</div>}
-          </div>
-        </div>
-
-        <div style={{ width: 640 }}>
-          <div className="mb-2 text-sm font-medium">Watching together</div>
-          <YouTubeSyncPlayer
-            socketRef={socketRef}
-            matchedPeer={matchedPeer}
-            initialVideoId={selected}
-          />
-        </div>
+        <YouTubeSyncPlayer
+          socketRef={socketRef}
+          matchedPeer={matchedPeer}
+          initialVideoId={selected}
+        />
       </div>
     </div>
-  );
+  </div>
+);
+
 }

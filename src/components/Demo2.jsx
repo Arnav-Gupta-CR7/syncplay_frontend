@@ -8,7 +8,7 @@ import ChatUI from "./ChatUI";
 
 
 
-const SERVER_URL = 'https://192.168.1.5:4000'; // change if backend elsewhere
+const SERVER_URL = 'https://192.168.1.6:4000'; // change if backend elsewhere
 
 export default function Demo2({ navigate }) {
   const localVideoRef = useRef(null);
@@ -22,6 +22,8 @@ export default function Demo2({ navigate }) {
   const [iceServers, setIceServers] = useState([{ urls: 'stun:global.stun.twilio.com:3478' }]);
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState([]);
+
+  const [remoteGlow, setRemoteGlow] = useState(false);
 
   
 
@@ -46,10 +48,17 @@ export default function Demo2({ navigate }) {
     socketRef.current.on("tab-change", ({ tab }) => {
       navigate(tab);
     });
+
+
     socketRef.current.on('matched', async ({ peerId }) => {
       setStatus('Matched with ' + peerId);
       setMatchedPeer(peerId);
-      // fetch ICE servers (STUN/TURN) from backend
+
+      // TRIGGER GLOW
+      setRemoteGlow(true);
+      setTimeout(() => setRemoteGlow(false), 2000);
+
+      // fetch ICE servers...
       try {
         const res = await fetch(SERVER_URL + '/ice-servers');
         const json = await res.json();
@@ -57,9 +66,8 @@ export default function Demo2({ navigate }) {
       } catch (e) {
         console.warn('could not load ice servers', e);
       }
-      // prepare connection
+
       await preparePeerConnection(peerId);
-      // deterministic offer rule: smaller socket id makes the offer
       const isCaller = socketRef.current.id < peerId;
       if (isCaller) {
         await createAndSendOffer();
@@ -67,6 +75,7 @@ export default function Demo2({ navigate }) {
         setStatus('Waiting for offer...');
       }
     });
+
 
     socketRef.current.on('signal', async ({ from, type, data }) => {
       if (!pcRef.current) {
@@ -206,84 +215,75 @@ export default function Demo2({ navigate }) {
   }
 
   return (
- 
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gray-100">
-  <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg p-6 flex gap-6">
+  <div className="w-full h-[90vh]  flex items-center justify-center">
 
-    {/* LEFT SIDE */}
-    <div className="w-1/3 flex flex-col gap-4">
+    <div className="w-full h-full max-w-7xl  lg:rounded-xl  p-6 flex gap-6">
 
-      <VideoSection
-        localVideoRef={localVideoRef}
-        remoteVideoRef={remoteVideoRef}
-      />
+      {/* LEFT SIDE */}
+      <div className="w-1/3 flex flex-col gap-4">
 
-      {/* Start + Leave Buttons */}
-      <div className="flex gap-3">
-        <button
-          onClick={findPartner}
-          className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl font-semibold shadow"
-        >
-          Start
-        </button>
+        <VideoSection
+          localVideoRef={localVideoRef}
+          remoteVideoRef={remoteVideoRef}
+          remoteGlow={remoteGlow}
+        />
 
-        <button
-          onClick={leave}
-          className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-semibold shadow"
-        >
-          Leave
-        </button>
+        {/* Start + Leave Buttons */}
+        <div className="flex gap-3">
+          <button onClick={findPartner} className="btn btn-success flex-1">
+            Start
+          </button>
+
+          <button onClick={leave} className="btn btn-error flex-1">
+            Leave
+          </button>
+        </div>
       </div>
 
-    </div>
-
-    {/* RIGHT SIDE (Sandbox with Router) */}
-    <div className="flex-1 bg-gray-50 rounded-xl shadow-inner">
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <SandboxLayout
-              socketRef={socketRef}
-              matchedPeer={matchedPeer}
+      {/* RIGHT SIDE */}
+      <div className="flex-1 bg-base-300 rounded-xl shadow-inner p-2 overflow-hidden">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <SandboxLayout socketRef={socketRef} matchedPeer={matchedPeer} />
+            }
+          >
+            <Route
+              path="chat"
+              element={
+                <ChatUI
+                  socketRef={socketRef}
+                  matchedPeer={matchedPeer}
+                  messages={messages}
+                  chatInput={chatInput}
+                  setChatInput={setChatInput}
+                  sendMessage={sendMessage}
+                  status={status}
+                />
+              }
             />
-          }
-        >
-          <Route
-            path="chat"
-            element={
-              <ChatUI
-                socketRef={socketRef}
-                matchedPeer={matchedPeer}
-                messages={messages}
-                chatInput={chatInput}
-                setChatInput={setChatInput}
-                sendMessage={sendMessage}
-                status={status}
-              />
-            }
-          />
 
-          <Route
-            path="youtube"
-            element={
-              <YouTubeTogether
-                socketRef={socketRef}
-                matchedPeer={matchedPeer}
-              />
-            }
-          />
-        </Route>
-      </Routes>
+            <Route
+              path="youtube"
+              element={
+                <YouTubeTogether
+                  socketRef={socketRef}
+                  matchedPeer={matchedPeer}
+                />
+              }
+            />
+          </Route>
+        </Routes>
+      </div>
+
     </div>
 
   </div>
-</div>
-
- 
 );
 
 
+
 }
 
 
@@ -312,117 +312,55 @@ export default function Demo2({ navigate }) {
 
 
 
-function VideoSection({ localVideoRef, remoteVideoRef }) {
+function VideoSection({ localVideoRef, remoteVideoRef, remoteGlow }) {
   return (
-    <div className="w-1/3 flex flex-col gap-4">
-      <div>
-        <div className="mb-1 font-medium text-sm text-gray-700">Local</div>
-        <video
-          ref={localVideoRef}
-          autoPlay
-          muted
-          playsInline
-          className="w-full aspect-video bg-black rounded-lg shadow"
-        />
+    <div className="w-full flex flex-col gap-4">
+
+      {/* LOCAL */}
+      <div className="card bg-base-100 shadow-md p-3">
+        <div className="mb-1 text-sm opacity-70">Local</div>
+
+        <div className="w-full h-48 bg-black rounded-box overflow-hidden">
+          <video
+            ref={localVideoRef}
+            autoPlay
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        </div>
       </div>
 
-      <div>
-        <div className="mb-1 font-medium text-sm text-gray-700">Remote</div>
-        <video
-          ref={remoteVideoRef}
-          autoPlay
-          playsInline
-          className="w-full aspect-video bg-black rounded-lg shadow"
-        />
-      </div>
-    </div>
-  );
-}
+      {/* REMOTE */}
+      <div className="card bg-base-100 shadow-md p-3">
+        <div className="mb-1 text-sm opacity-70">Remote</div>
 
-
-function ChatSection({ messages, chatInput, setChatInput, sendMessage }) {
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 bg-gray-100 rounded-lg p-3 overflow-y-auto shadow-inner">
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`mb-2 flex ${
-              msg.sender === "me" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`px-3 py-2 rounded-lg max-w-xs text-sm ${
-                msg.sender === "me"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-300 text-gray-900"
-              }`}
-            >
-              {msg.text}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-3 flex gap-2">
-        <input
-          value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          className="flex-1 px-3 py-2 rounded-lg border border-gray-300"
-          placeholder="Type a message..."
-        />
-        <button
-          onClick={sendMessage}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+        <div
+          className={`
+            w-full h-48 bg-black rounded-box overflow-hidden transition-all
+            ${remoteGlow ? "neon-glow" : ""}
+          `}
         >
-          Send
-        </button>
-      </div>
-    </div>
-  );
-}
-
-
-function ControlPanel({ findPartner, leave, status }) {
-  return (
-    <div className="mt-6">
-      <h1 className="text-2xl font-semibold mb-4">Simple Omegle Clone</h1>
-
-      <div className="flex items-center gap-3 mb-4">
-        <button
-          onClick={findPartner}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
-        >
-          Find Partner
-        </button>
-
-        <button
-          onClick={leave}
-          className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition"
-        >
-          Leave
-        </button>
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        </div>
       </div>
 
-      <div className="text-sm text-gray-600 mb-2">
-        Status: <span className="font-medium">{status}</span>
-      </div>
-
-      <div className="text-xs text-gray-500">
-        Notes: open two tabs or devices to test.
-      </div>
     </div>
   );
 }
 
 
 
-function RightPanel(props) {
-  return (
-    <div className="flex-1 flex flex-col justify-between">
-      <ChatSection {...props} />
-      <ControlPanel {...props} />
-    </div>
-  );
-}
+
+
+
+
+
+
+
+

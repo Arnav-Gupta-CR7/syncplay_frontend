@@ -1,1 +1,27 @@
 @import "tailwindcss";
+
+@plugin "daisyui" {
+   themes: light --default, dark --prefersdark, cupcake;
+ }
+
+
+@keyframes neonPulse {
+  0% {
+    box-shadow: 0 0 0px rgba(0, 255, 135, 0.2);
+    border-color: rgba(0, 255, 135, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(0, 255, 135, 0.9);
+    border-color: rgba(0, 255, 135, 1);
+  }
+  100% {
+    box-shadow: 0 0 0px rgba(0, 255, 135, 0.2);
+    border-color: rgba(0, 255, 135, 0.3);
+  }
+}
+
+.neon-glow {
+  border: 3px solid rgba(0, 255, 135, 1);
+  animation: neonPulse 1.8s ease-out forwards;
+}
+
