@@ -30,6 +30,8 @@ export default function MusicTogether({
   const ignoreLocalRef = useRef(false); // prevents feedback loop when applying remote events
   const rttRef = useRef(null); // round-trip time estimate in ms
 
+  
+
   // Helper: fetch server-side youtube search
   async function fetchYTSearch(q) {
     const res = await fetch(`${serverUrl}/youtube/search?q=${encodeURIComponent(q)}`);
@@ -235,144 +237,170 @@ export default function MusicTogether({
   }, [socketRef, matchedPeer]);
 
   return (
-    <div className="flex flex-col gap-4 h-full w-full p-3">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <input
-          className="input input-bordered input-sm flex-1"
-          placeholder="Search music (YouTube)"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && searchMusic(query)}
-        />
-        <button className="btn btn-sm btn-primary" onClick={() => searchMusic(query)}>
-          Search
-        </button>
-        <div className="text-xs opacity-70">{matchedPeer ? "Paired" : "Not paired"}</div>
-      </div>
+  <div className="flex flex-col h-full w-full p-4 bg-base-200 rounded-xl">
 
-      {/* Results and Player area */}
-      <div className="flex gap-4 h-full">
-        {/* Results */}
-        <div className="w-1/3 bg-base-200 p-2 rounded-lg overflow-auto">
-          {loading && <div className="loading loading-spinner"></div>}
-          {!loading && results.length === 0 && <div className="text-sm opacity-50 p-2">No results</div>}
-          {results.map((r) => (
+    {/* Search Bar */}
+    <div className="flex gap-2 items-center mb-4">
+      <input
+        className="input input-bordered w-full input-sm"
+        placeholder="Search songs…"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && searchMusic(query)}
+      />
+
+      <button
+        className="btn btn-primary btn-sm"
+        onClick={() => searchMusic(query)}
+      >
+        Search
+      </button>
+    </div>
+
+    <div className="grid grid-cols-3 gap-4 h-full">
+
+      {/* LEFT — Search Results */}
+      <div className="col-span-1 bg-base-100 rounded-lg shadow p-3 overflow-y-auto">
+
+        <h3 className="text-sm opacity-70 mb-2">Search Results</h3>
+
+        {loading && (
+          <div className="flex justify-center p-4">
+            <span className="loading loading-spinner"></span>
+          </div>
+        )}
+
+        {results.length === 0 && !loading && (
+          <div className="text-xs opacity-50 p-2">No results</div>
+        )}
+
+        <div className="space-y-2">
+          {results.map((song) => (
             <div
-              key={r.videoId}
-              className="flex items-center gap-3 p-2 rounded hover:bg-base-300 cursor-pointer transition"
-              onClick={() => selectSong(r)}
+              key={song.videoId}
+              className="flex gap-3 p-2 rounded-lg hover:bg-base-200 cursor-pointer transition"
+              onClick={() => selectSong(song)}
             >
-              <img src={r.thumbnails?.default?.url} alt="" className="w-16 h-12 rounded" />
-              <div className="flex-1">
-                <div className="text-sm font-medium">{r.title}</div>
-                <div className="text-xs opacity-60">{r.channelTitle}</div>
+              <img
+                src={song.thumbnails?.default?.url}
+                className="w-14 h-10 rounded object-cover"
+                alt=""
+              />
+
+              <div className="flex flex-col justify-center">
+                <div className="text-sm font-medium line-clamp-1">{song.title}</div>
+                <div className="text-xs opacity-60 line-clamp-1">{song.channelTitle}</div>
               </div>
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Player */}
-        <div className="flex-1 bg-base-100 p-4 rounded-lg shadow flex flex-col">
-          <div className="flex gap-4 items-center">
-            <div className="w-28 h-28 bg-neutral rounded overflow-hidden flex-shrink-0">
-              {meta?.thumbnail ? (
-                <img src={meta.thumbnail} alt="thumb" className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex items-center justify-center h-full text-sm opacity-50">No song</div>
-              )}
-            </div>
+      {/* MIDDLE — Player */}
+      <div className="col-span-2 bg-base-100 rounded-lg shadow p-5 flex flex-col">
 
-            <div className="flex-1">
-              <div className="text-lg font-semibold">{meta?.title || "Nothing selected"}</div>
-              <div className="text-sm opacity-60">{meta?.channel || "—"}</div>
-
-              <div className="flex items-center gap-2 mt-3">
-                <button
-                  className="btn btn-sm btn-ghost"
-                  onClick={() => {
-                    const audio = audioRef.current;
-                    if (!audio) return;
-                    // go back 10s
-                    const t = Math.max(0, audio.currentTime - 10);
-                    ignoreLocalRef.current = true;
-                    audio.currentTime = t;
-                    emitMusicEvent("SEEK", t);
-                  }}
-                >
-                  -10s
-                </button>
-
-                <button
-                  className="btn btn-sm btn-primary"
-                  onClick={() => {
-                    const audio = audioRef.current;
-                    if (!audio) return;
-                    ignoreLocalRef.current = true;
-                    audio.play().catch(() => {});
-                    setIsPlaying(true);
-                    emitMusicEvent("PLAY", audio.currentTime);
-                  }}
-                >
-                  ▶
-                </button>
-
-                <button
-                  className="btn btn-sm btn-primary"
-                  onClick={() => {
-                    const audio = audioRef.current;
-                    if (!audio) return;
-                    ignoreLocalRef.current = true;
-                    audio.pause();
-                    setIsPlaying(false);
-                    emitMusicEvent("PAUSE", audio.currentTime);
-                  }}
-                >
-                  ⏸
-                </button>
-
-                <button
-                  className="btn btn-sm btn-ghost"
-                  onClick={() => {
-                    const audio = audioRef.current;
-                    if (!audio) return;
-                    const t = audio.currentTime + 10;
-                    ignoreLocalRef.current = true;
-                    audio.currentTime = t;
-                    emitMusicEvent("SEEK", t);
-                  }}
-                >
-                  +10s
-                </button>
-
-                <div className="ml-4 text-xs opacity-60">Volume</div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={volume}
-                  onChange={(e) => {
-                    const v = Number(e.target.value);
-                    setVolume(v);
-                    if (audioRef.current) audioRef.current.volume = v;
-                  }}
-                />
+        {/* Now Playing Header */}
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-20 h-20 rounded-xl bg-neutral overflow-hidden">
+            {meta?.thumbnail ? (
+              <img src={meta.thumbnail} className="w-full h-full object-cover" />
+            ) : (
+              <div className="flex items-center justify-center h-full text-xs opacity-40">
+                No Song
               </div>
-
-              <div className="text-xs opacity-60 mt-2">
-                {matchedPeer ? "Synced with partner" : "Local only"}
-                {rttRef.current ? ` • RTT ~ ${Math.round(rttRef.current)} ms` : ""}
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Hidden audio element */}
-          <div className="mt-4">
-            <audio ref={audioRef} controls className="w-full" preload="auto" />
+          <div className="flex flex-col">
+            <div className="text-lg font-semibold">{meta?.title || "Nothing Playing"}</div>
+            <div className="text-sm opacity-60">{meta?.channel || ""}</div>
+            <div className="text-xs opacity-50 mt-1">
+              {matchedPeer ? "Synced with partner" : "Not synced"}
+            </div>
           </div>
         </div>
+
+        {/* Audio Element */}
+        <audio ref={audioRef} controls className="w-full mb-4" />
+
+        {/* Controls Row */}
+        <div className="flex items-center gap-3">
+
+          <button
+            className="btn btn-circle btn-outline btn-sm"
+            onClick={() => {
+              const audio = audioRef.current;
+              if (!audio) return;
+              const t = Math.max(0, audio.currentTime - 10);
+              ignoreLocalRef.current = true;
+              audio.currentTime = t;
+              emitMusicEvent("SEEK", t);
+            }}
+          >
+            -10
+          </button>
+
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => {
+              const audio = audioRef.current;
+              ignoreLocalRef.current = true;
+              audio.play();
+              emitMusicEvent("PLAY", audio.currentTime);
+            }}
+          >
+            ▶ Play
+          </button>
+
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => {
+              const audio = audioRef.current;
+              ignoreLocalRef.current = true;
+              audio.pause();
+              emitMusicEvent("PAUSE", audio.currentTime);
+            }}
+          >
+            ⏸ Pause
+          </button>
+
+          <button
+            className="btn btn-circle btn-outline btn-sm"
+            onClick={() => {
+              const audio = audioRef.current;
+              const t = audio.currentTime + 10;
+              ignoreLocalRef.current = true;
+              audio.currentTime = t;
+              emitMusicEvent("SEEK", t);
+            }}
+          >
+            +10
+          </button>
+
+          <div className="ml-4 flex items-center gap-2">
+            <span className="text-xs opacity-60">Vol</span>
+
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              className="range range-xs"
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setVolume(v);
+                if (audioRef.current) audioRef.current.volume = v;
+              }}
+            />
+          </div>
+
+        </div>
+
       </div>
     </div>
-  );
+
+  </div>
+);
+
 }

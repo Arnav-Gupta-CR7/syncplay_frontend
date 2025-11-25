@@ -12,7 +12,9 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.10.1",
     "@tailwindcss/vite": "^4.1.17",
+    "chess.js": "^1.0.0",
     "react": "^19.1.1",
+    "react-chessboard": "^3.2.0",
     "react-dom": "^19.1.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.6",

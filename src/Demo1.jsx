@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const SERVER_URL = 'https://192.168.1.5:4000'; // change if backend elsewhere
+const SERVER_URL = 'https://10.225.77.98:4000'; // change if backend elsewhere
 
 export default function Demo1() {
   const localVideoRef = useRef(null);

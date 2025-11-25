@@ -114,6 +114,7 @@ export default function Demo2({ navigate }) {
 
 
   }, []);
+  
 
   function sendMessage() {
     if (!matchedPeer || !chatInput.trim()) return;
@@ -280,7 +281,7 @@ export default function Demo2({ navigate }) {
 
             {/* 🎮 Game Route */}
             <Route
-              path="game"
+              path="game/*"
               element={
                 <GameTogether
                   socketRef={socketRef}
