@@ -16,7 +16,7 @@ import React, { useEffect, useRef, useState } from "react";
 export default function MusicTogether({
   socketRef,
   matchedPeer,
-  serverUrl = "https://192.168.1.6:4000",
+  serverUrl = "https://syncplay-backend-s14p.onrender.com",
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
