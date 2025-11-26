@@ -10,7 +10,7 @@ import ChatUI from "./ChatUI";
 
 
 
-const SERVER_URL = 'https://192.168.1.6:4000'; // change if backend elsewhere
+const SERVER_URL = 'https://syncplay-backend-s14p.onrender.com'; // change if backend elsewhere
 
 export default function Demo2({ navigate }) {
   const localVideoRef = useRef(null);

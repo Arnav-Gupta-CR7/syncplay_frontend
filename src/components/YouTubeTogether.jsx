@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import YouTubeSyncPlayer from './YouTubeSyncPlayer'; // the player you already added (or use the one you used earlier)
 
 
-const SERVER_URL = "https://192.168.1.6:4000"; // same as your signaling server
+const SERVER_URL = "https://syncplay-backend-s14p.onrender.com"; // same as your signaling server
 
 async function fetchYTSearch(q) {
   const res = await fetch(`${SERVER_URL}/youtube/search?q=${encodeURIComponent(q)}`);
