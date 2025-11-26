@@ -1,5 +1,5 @@
 // ChessTogether.jsx
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 
@@ -13,6 +13,7 @@ export default function ChessTogether({ socketRef, matchedPeer }) {
   const [turnColor, setTurnColor] = useState("white");
   const [status, setStatus] = useState("Waiting...");
   const [lastMove, setLastMove] = useState(null);
+  const [highlightSquares, setHighlightSquares] = useState({});
 
   // Setup when paired
   useEffect(() => {
@@ -80,37 +81,44 @@ export default function ChessTogether({ socketRef, matchedPeer }) {
 
   // Handle player dragging piece
   function handleDrop(sourceSquare, targetSquare) {
-  console.log("DROP FIRED:", sourceSquare, "->", targetSquare);
+    console.log("DROP FIRED:", sourceSquare, "->", targetSquare);
 
-  const turn = chess.turn() === "w" ? "white" : "black";
-  if (turn !== myColor) {
-    console.log("Incorrect turn");
-    return false;
+    const turn = chess.turn() === "w" ? "white" : "black";
+    if (turn !== myColor) {
+      console.log("Incorrect turn");
+      return false;
+    }
+
+    const move = chess.move({
+      from: sourceSquare,
+      to: targetSquare,
+      promotion: "q"
+    });
+
+    if (!move) {
+      console.log("Illegal move");
+      return false;
+    }
+
+    setFen(chess.fen());
+    setTurnColor(chess.turn() === "w" ? "white" : "black");
+    setLastMove({ from: move.from, to: move.to });
+
+    sendMove({
+      from: move.from,
+      to: move.to,
+      promotion: move.promotion,
+    });
+
+    if (!move) {
+      setHighlightSquares({});
+      return false;
+    }
+
+    setHighlightSquares({});
+
+    return true;
   }
-
-  const move = chess.move({
-    from: sourceSquare,
-    to: targetSquare,
-    promotion: "q"
-  });
-
-  if (!move) {
-    console.log("Illegal move");
-    return false;
-  }
-
-  setFen(chess.fen());
-  setTurnColor(chess.turn() === "w" ? "white" : "black");
-  setLastMove({ from: move.from, to: move.to });
-
-  sendMove({
-    from: move.from,
-    to: move.to,
-    promotion: move.promotion,
-  });
-
-  return true;
-}
 
 
   // Reset game for both
@@ -147,63 +155,101 @@ export default function ChessTogether({ socketRef, matchedPeer }) {
     }`;
   }, [fen, turnColor, myColor, chess]);
 
+
+  function handlePieceDragBegin(piece, sourceSquare) {
+    const moves = chess.moves({ square: sourceSquare, verbose: true });
+
+    if (moves.length === 0) {
+      setHighlightSquares({});
+      return;
+    }
+
+    const highlights = {};
+    moves.forEach(move => {
+  highlights[move.to] = {
+  background: "rgba(0,255,130,0.3)",
+  borderRadius: "50%",
+  boxShadow: "0 0 12px rgba(0,255,130,0.5)",
+};
+});
+
+
+    // Also highlight the selected square
+    highlights[sourceSquare] = {
+      background: "rgba(255, 255, 0, 0.5)",  // yellow highlight for selected
+    };
+
+    setHighlightSquares(highlights);
+  }
+
+
   return (
-    <div className="p-4">
+  <div className="px-4">
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <div className="text-2xl font-bold">Chess</div>
-          <div className="text-sm opacity-60">
-            {status} • {statusText}
-          </div>
-        </div>
-
-        <button className="btn btn-sm" onClick={resetGame}>
-          Reset
-        </button>
+    {/* Header */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-3">
+      <div>
+        <h1 className="text-3xl font-extrabold">Chess</h1>
+        <p className="text-sm opacity-60 mt-1">
+          {status} • {statusText}
+        </p>
       </div>
 
-      {/* Board + Sidebar */}
-      <div className="flex gap-6">
-      
+      <button className="btn btn-primary btn-sm self-start sm:self-auto" onClick={resetGame}>
+        Reset Game
+      </button>
+    </div>
+
+    {/* Layout */}
+    <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+
+      {/* Chessboard */}
+      <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
         <Chessboard
           id="ChessBoard"
+          customSquareStyles={highlightSquares}
+          onPieceDragBegin={handlePieceDragBegin}
           position={fen}
           onPieceDrop={handleDrop}
           boardOrientation={myColor}
           arePiecesDraggable={true}
           animationDuration={200}
           customBoardStyle={{
-            borderRadius: "8px",
-            boxShadow: "0 6px 16px rgba(0,0,0,0.15)",
+            borderRadius: "12px",
+            boxShadow: "0 8px 22px rgba(0,0,0,0.18)",
           }}
-          customDarkSquareStyle={{ backgroundColor: "#769656" }}
-          customLightSquareStyle={{ backgroundColor: "#eeeed2" }}
+          customDarkSquareStyle={{ backgroundColor: "#38b381" }}  
+          customLightSquareStyle={{ backgroundColor: "#e8f7ef" }}
         />
+      </div>
 
-        {/* Sidebar */}
-        <div className="w-64 space-y-3">
-          <div className="card p-4 bg-base-100 shadow rounded-lg">
-            <div className="mb-2">
-              <div className="text-sm opacity-60">You are:</div>
-              <div className="text-lg font-semibold capitalize">{myColor}</div>
+      {/* Sidebar */}
+      <div className="w-full lg:w-64 space-y-4">
+
+        {/* Status Card */}
+        <div className="card bg-base-100 shadow-md rounded-xl border border-base-200">
+          <div className="card-body p-5">
+            
+            <h2 className="card-title text-lg">Game Info</h2>
+            <div className="divider my-2"></div>
+
+            <div className="flex justify-between text-sm opacity-70">
+              <span>You are:</span>
+              <span className="font-semibold capitalize opacity-100">{myColor}</span>
             </div>
 
-            <div className="mb-2">
-              <div className="text-sm opacity-60">Turn:</div>
-              <div className="text-lg font-semibold capitalize">
-                {turnColor}
-              </div>
+            <div className="flex justify-between text-sm opacity-70">
+              <span>Turn:</span>
+              <span className="font-semibold capitalize opacity-100">{turnColor}</span>
             </div>
 
-            <div className="mb-2">
-              <div className="text-sm opacity-60">Game status:</div>
-              <div className="">{statusText}</div>
+            <div className="flex justify-between text-sm opacity-70">
+              <span>Status:</span>
+              <span className="font-medium opacity-100">{statusText}</span>
             </div>
 
             <button
-              className="btn btn-outline btn-sm w-full mt-3"
+              className="btn btn-outline btn-sm w-full mt-4"
               onClick={() => {
                 navigator.clipboard.writeText(chess.fen());
                 alert("FEN copied!");
@@ -212,13 +258,17 @@ export default function ChessTogether({ socketRef, matchedPeer }) {
               Copy FEN
             </button>
           </div>
+        </div>
 
-          <div className="text-xs opacity-50">
-            Moves are synced automatically in real-time.
-          </div>
+        {/* Notes */}
+        <div className="text-xs opacity-60 text-center lg:text-left">
+          Moves sync automatically in real-time.
         </div>
 
       </div>
     </div>
-  );
+  </div>
+);
+
+
 }
