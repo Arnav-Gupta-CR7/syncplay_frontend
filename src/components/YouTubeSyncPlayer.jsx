@@ -192,22 +192,22 @@ export default function YouTubeSyncPlayer({ socketRef, matchedPeer, initialVideo
   }
 
   return (
-  <div className="w-full">
+  <div className="w-full flex flex-col gap-3">
 
-    {/* Player */}
+    {/* PLAYER */}
     <div
       id={containerId}
-      className="w-full rounded-box overflow-hidden shadow mb-3"
+      className="w-full rounded-box overflow-hidden shadow-lg"
     />
 
-    {/* Controls */}
-    <div className="flex flex-wrap gap-2 items-center">
+    {/* CONTROLS */}
+    <div className="flex flex-wrap gap-2 items-center justify-center">
 
-      <button onClick={playForBoth} className="btn btn-success btn-sm">
+      <button onClick={playForBoth} className="btn btn-success btn-sm sm:btn-md">
         ▶ Play
       </button>
 
-      <button onClick={pauseForBoth} className="btn btn-warning btn-sm">
+      <button onClick={pauseForBoth} className="btn btn-warning btn-sm sm:btn-md">
         ⏸ Pause
       </button>
 
@@ -217,7 +217,7 @@ export default function YouTubeSyncPlayer({ socketRef, matchedPeer, initialVideo
             Math.max(0, (playerRef.current?.getCurrentTime() || 0) - 10)
           )
         }
-        className="btn btn-info btn-sm"
+        className="btn btn-info btn-sm sm:btn-md"
       >
         -10s
       </button>
@@ -226,34 +226,39 @@ export default function YouTubeSyncPlayer({ socketRef, matchedPeer, initialVideo
         onClick={() =>
           seekForBoth((playerRef.current?.getCurrentTime() || 0) + 10)
         }
-        className="btn btn-info btn-sm"
+        className="btn btn-info btn-sm sm:btn-md"
       >
         +10s
       </button>
 
-      {/* Video ID Loader */}
-      <div className="ml-4 flex items-center gap-2">
-        <input
-          id="yt-id-input"
-          placeholder="YouTube ID"
-          className="input input-bordered input-sm"
-        />
-        <button
-          onClick={() => {
-            const id = document.getElementById("yt-id-input")?.value?.trim();
-            if (id) changeVideoForBoth(id);
-          }}
-          className="btn btn-secondary btn-sm"
-        >
-          Load
-        </button>
-      </div>
     </div>
 
-    <p className="text-xs text-gray-500 mt-2">
-      All actions sync automatically with your partner.
+    {/* YOUTUBE INPUT ROW — MOBILE OPTIMIZED
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
+
+      <input
+        id="yt-id-input"
+        placeholder="YouTube ID"
+        className="input input-bordered input-sm sm:input-md w-full"
+      />
+
+      <button
+        onClick={() => {
+          const id = document.getElementById("yt-id-input")?.value?.trim();
+          if (id) changeVideoForBoth(id);
+        }}
+        className="btn btn-secondary btn-sm sm:btn-md w-full sm:w-auto"
+      >
+        Load Video
+      </button>
+    </div> */}
+
+    <p className="text-xs opacity-60 text-center">
+      Actions sync automatically with your partner.
     </p>
+
   </div>
 );
+
 
 }

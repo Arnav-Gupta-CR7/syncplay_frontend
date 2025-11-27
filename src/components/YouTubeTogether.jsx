@@ -137,7 +137,6 @@ export default function YouTubeTogether({ socketRef, matchedPeer, initialVideoId
     className="p-4 bg-base-200 rounded-box shadow relative w-full h-full"
     ref={containerRef}
   >
-
     {/* Cursors */}
     <div className="absolute inset-0 pointer-events-none">
       <div
@@ -152,11 +151,13 @@ export default function YouTubeTogether({ socketRef, matchedPeer, initialVideoId
       />
     </div>
 
-    <div className="flex gap-6">
-      {/* LEFT SIDE: Search + Results */}
-      <div className="flex-1 min-w-[320px]">
+    {/* LAYOUT */}
+    <div className="flex flex-col lg:flex-row gap-6">
+      
+      {/* LEFT SIDE — Search + Results */}
+      <div className="flex-1 min-w-full lg:min-w-[320px]">
 
-        {/* Search Bar */}
+        {/* SEARCH BAR */}
         <div className="flex gap-2 mb-3">
           <input
             className="input input-bordered w-full"
@@ -170,8 +171,8 @@ export default function YouTubeTogether({ socketRef, matchedPeer, initialVideoId
           </button>
         </div>
 
-        {/* Results */}
-        <div className="max-h-96 overflow-auto space-y-2">
+        {/* RESULTS */}
+        <div className="max-h-[50vh] lg:max-h-96 overflow-auto space-y-2">
 
           {loading && (
             <div className="text-center py-3">
@@ -198,7 +199,9 @@ export default function YouTubeTogether({ socketRef, matchedPeer, initialVideoId
                 />
               </figure>
               <div className="card-body p-3">
-                <h2 className="card-title text-sm">{it.title}</h2>
+                <h2 className="card-title text-sm line-clamp-2">
+                  {it.title}
+                </h2>
                 <p className="text-xs opacity-60">{it.channelTitle}</p>
               </div>
             </div>
@@ -206,15 +209,17 @@ export default function YouTubeTogether({ socketRef, matchedPeer, initialVideoId
         </div>
       </div>
 
-      {/* RIGHT SIDE: Player */}
-      <div className="w-[640px]">
+      {/* RIGHT SIDE — Player */}
+      <div className="w-full lg:w-[640px]">
         <div className="text-sm font-semibold mb-2">Watching Together</div>
 
-        <YouTubeSyncPlayer
-          socketRef={socketRef}
-          matchedPeer={matchedPeer}
-          initialVideoId={selected}
-        />
+        <div className="w-full  rounded-box overflow-hidden">
+          <YouTubeSyncPlayer
+            socketRef={socketRef}
+            matchedPeer={matchedPeer}
+            initialVideoId={selected}
+          />
+        </div>
       </div>
     </div>
   </div>

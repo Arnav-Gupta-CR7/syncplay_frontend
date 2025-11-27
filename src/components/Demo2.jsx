@@ -7,6 +7,7 @@ import MusicTogether from './MusicTogether';
 import { Routes, Route } from "react-router-dom";
 import SandboxLayout from "./SandboxLayout";
 import ChatUI from "./ChatUI";
+import Navbar from './mini_coponents/Navbar';
 
 
 
@@ -199,6 +200,7 @@ export default function Demo2({ navigate }) {
     socketRef.current.emit('leave');
     cleanup();
     setStatus('Left');
+    findPartner();
   }
 
   function cleanup() {
@@ -218,98 +220,82 @@ export default function Demo2({ navigate }) {
   }
 
   return (
-  <div className="w-full h-[90vh]  flex items-center justify-center">
+  <div className="w-full min-h-screen flex flex-col">
+    <Navbar />
 
-    <div className="w-full h-full max-w-7xl  lg:rounded-xl  p-6 flex gap-6">
+    <div className="flex-1 w-full flex items-center justify-center p-2">
+      <div className="w-full h-full max-w-7xl p-4 flex flex-col lg:flex-row gap-4">
 
-      {/* LEFT SIDE */}
-      <div className="w-1/3 flex flex-col gap-4">
+        {/* LEFT SIDE */}
+        <div className="w-full lg:w-1/3 flex flex-col gap-4">
+          <VideoSection
+            localVideoRef={localVideoRef}
+            remoteVideoRef={remoteVideoRef}
+            remoteGlow={remoteGlow}
+          />
 
-        <VideoSection
-          localVideoRef={localVideoRef}
-          remoteVideoRef={remoteVideoRef}
-          remoteGlow={remoteGlow}
-        />
+          <div className="flex gap-3">
+            <button onClick={findPartner} className="btn btn-success flex-1">
+              Start
+            </button>
 
-        {/* Start + Leave Buttons */}
-        <div className="flex gap-3">
-          <button onClick={findPartner} className="btn btn-success flex-1">
-            Start
-          </button>
-
-          <button onClick={leave} className="btn btn-error flex-1">
-            Leave
-          </button>
+            <button onClick={leave} className="btn btn-error flex-1">
+              Leave
+            </button>
+          </div>
         </div>
+
+        {/* RIGHT SIDE */}
+        <div className="flex-1 bg-base-300 rounded-xl shadow-inner p-2 overflow-hidden">
+          <Routes>
+            <Route
+              path="/"
+              element={<SandboxLayout socketRef={socketRef} matchedPeer={matchedPeer} />}
+            >
+              <Route
+                path="chat"
+                element={
+                  <ChatUI
+                    socketRef={socketRef}
+                    matchedPeer={matchedPeer}
+                    messages={messages}
+                    chatInput={chatInput}
+                    setChatInput={setChatInput}
+                    sendMessage={sendMessage}
+                    status={status}
+                  />
+                }
+              />
+
+              <Route
+                path="youtube"
+                element={
+                  <YouTubeTogether socketRef={socketRef} matchedPeer={matchedPeer} />
+                }
+              />
+
+              <Route
+                path="game/*"
+                element={
+                  <GameTogether socketRef={socketRef} matchedPeer={matchedPeer} />
+                }
+              />
+
+              <Route
+                path="music"
+                element={
+                  <MusicTogether socketRef={socketRef} matchedPeer={matchedPeer} />
+                }
+              />
+            </Route>
+          </Routes>
+        </div>
+
       </div>
-
-      {/* RIGHT SIDE */}
-      <div className="flex-1 bg-base-300 rounded-xl shadow-inner p-2 overflow-hidden">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <SandboxLayout socketRef={socketRef} matchedPeer={matchedPeer} />
-            }
-          >
-            {/* Chat */}
-            <Route
-              path="chat"
-              element={
-                <ChatUI
-                  socketRef={socketRef}
-                  matchedPeer={matchedPeer}
-                  messages={messages}
-                  chatInput={chatInput}
-                  setChatInput={setChatInput}
-                  sendMessage={sendMessage}
-                  status={status}
-                />
-              }
-            />
-
-            {/* YouTube Watch Together */}
-            <Route
-              path="youtube"
-              element={
-                <YouTubeTogether
-                  socketRef={socketRef}
-                  matchedPeer={matchedPeer}
-                />
-              }
-            />
-
-            {/* 🎮 Game Route */}
-            <Route
-              path="game/*"
-              element={
-                <GameTogether
-                  socketRef={socketRef}
-                  matchedPeer={matchedPeer}
-                />
-              }
-            />
-
-            {/* 🎵 Music Route */}
-            <Route
-              path="music"
-              element={
-                <MusicTogether
-                  socketRef={socketRef}
-                  matchedPeer={matchedPeer}
-                />
-              }
-            />
-
-          </Route>
-        </Routes>
-      </div>
-
-
     </div>
-
   </div>
 );
+
 
 
 
