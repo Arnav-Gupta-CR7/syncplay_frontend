@@ -80,7 +80,7 @@ function ChatSection({ messages, chatInput, setChatInput, sendMessage }) {
                 <div
                   className={`chat-bubble ${
                     mine ? "chat-bubble-primary" : "chat-bubble-secondary"
-                  } whitespace-pre-wrap break-words text-sm`}
+                  } whitespace-pre-wrap  text-sm`}
                 >
                   {m.text}
                 </div>
