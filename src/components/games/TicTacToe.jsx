@@ -130,13 +130,13 @@ export default function TicTacToe({ socketRef, matchedPeer }) {
         </button>
     </div>
 
-    <div className="grid grid-cols-3 gap-2 p-3 bg-base-300/30 rounded-xl shadow-inner">
+    <div className="grid grid-cols-3 gap-2 p-3 bg-primary-content rounded-xl shadow-inner">
         {board.map((v, i) => (
         <button
             key={i}
             className="aspect-square w-full flex items-center justify-center 
                     text-3xl font-bold rounded-lg
-                    bg-base-200/40 backdrop-blur-sm
+                    bg-success backdrop-blur-sm
                     hover:bg-primary/20 transition-all duration-150
                     active:scale-95"
             onClick={() => handleClick(i)}

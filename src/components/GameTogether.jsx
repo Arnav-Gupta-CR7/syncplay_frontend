@@ -60,10 +60,12 @@ export default function GameTogether({ socketRef, matchedPeer }) {
                 className="p-4 bg-base-100 rounded-xl shadow hover:bg-base-200 cursor-pointer transition flex flex-col items-center"
                 onClick={() => openGame("chess")}
               >
-                <svg width="40" height="40" fill="currentColor" className="mb-2">
-                  <path d="M12 2h16l-2 4 2 3H14l2-3-2-4z" />
-                </svg>
-                <span className="font-medium">Chess (coming)</span>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" className="mb-2">
+  <path d="M12 2l3 4-3 4-3-4 3-4zm-3 10h6l1 3-1 5H10l-1-5 1-3zm-2 10h10v2H7v-2z"/>
+</svg>
+
+
+                <span className="font-medium">Chess</span>
               </div>
 
               {/* Trivia (placeholder) */}

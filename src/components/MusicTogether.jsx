@@ -237,10 +237,10 @@ export default function MusicTogether({
   }, [socketRef, matchedPeer]);
 
   return (
-  <div className="flex flex-col h-full w-full p-4 bg-base-200 rounded-xl">
+  <div className="flex flex-col h-full w-full p-3 sm:p-4 bg-base-200 rounded-xl">
 
     {/* Search Bar */}
-    <div className="flex gap-2 items-center mb-4">
+    <div className="flex gap-2 items-center mb-3 sm:mb-4">
       <input
         className="input input-bordered w-full input-sm"
         placeholder="Search songs…"
@@ -257,11 +257,16 @@ export default function MusicTogether({
       </button>
     </div>
 
-    <div className="grid grid-cols-3 gap-4 h-full">
+    {/* MAIN LAYOUT */}
+    <div className="
+      flex flex-col lg:grid lg:grid-cols-3 gap-4 h-full
+    ">
 
       {/* LEFT — Search Results */}
-      <div className="col-span-1 bg-base-100 rounded-lg shadow p-3 overflow-y-auto">
-
+      <div className="
+        bg-base-100 rounded-lg shadow p-3 overflow-y-auto
+        h-64 sm:h-80 lg:h-full
+      ">
         <h3 className="text-sm opacity-70 mb-2">Search Results</h3>
 
         {loading && (
@@ -270,7 +275,7 @@ export default function MusicTogether({
           </div>
         )}
 
-        {results.length === 0 && !loading && (
+        {!loading && results.length === 0 && (
           <div className="text-xs opacity-50 p-2">No results</div>
         )}
 
@@ -296,12 +301,15 @@ export default function MusicTogether({
         </div>
       </div>
 
-      {/* MIDDLE — Player */}
-      <div className="col-span-2 bg-base-100 rounded-lg shadow p-5 flex flex-col">
+      {/* RIGHT — Player */}
+      <div className="
+        bg-base-100 rounded-lg shadow p-4 flex flex-col
+        flex-1 lg:col-span-2
+      ">
 
         {/* Now Playing Header */}
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-20 h-20 rounded-xl bg-neutral overflow-hidden">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-neutral overflow-hidden">
             {meta?.thumbnail ? (
               <img src={meta.thumbnail} className="w-full h-full object-cover" />
             ) : (
@@ -312,9 +320,11 @@ export default function MusicTogether({
           </div>
 
           <div className="flex flex-col">
-            <div className="text-lg font-semibold">{meta?.title || "Nothing Playing"}</div>
-            <div className="text-sm opacity-60">{meta?.channel || ""}</div>
-            <div className="text-xs opacity-50 mt-1">
+            <div className="text-base sm:text-lg font-semibold line-clamp-1">
+              {meta?.title || "Nothing Playing"}
+            </div>
+            <div className="text-xs sm:text-sm opacity-60 line-clamp-1">{meta?.channel || ""}</div>
+            <div className="text-[10px] opacity-50 mt-1">
               {matchedPeer ? "Synced with partner" : "Not synced"}
             </div>
           </div>
@@ -324,7 +334,7 @@ export default function MusicTogether({
         <audio ref={audioRef} controls className="w-full mb-4" />
 
         {/* Controls Row */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap gap-3 items-center">
 
           <button
             className="btn btn-circle btn-outline btn-sm"
@@ -377,7 +387,8 @@ export default function MusicTogether({
             +10
           </button>
 
-          <div className="ml-4 flex items-center gap-2">
+          {/* Volume */}
+          <div className="flex items-center gap-2 ml-1 sm:ml-4">
             <span className="text-xs opacity-60">Vol</span>
 
             <input
@@ -386,7 +397,7 @@ export default function MusicTogether({
               max="1"
               step="0.01"
               value={volume}
-              className="range range-xs"
+              className="range range-xs w-28 sm:w-32"
               onChange={(e) => {
                 const v = Number(e.target.value);
                 setVolume(v);
@@ -402,5 +413,6 @@ export default function MusicTogether({
 
   </div>
 );
+
 
 }
