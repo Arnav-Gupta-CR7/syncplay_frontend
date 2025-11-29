@@ -15,6 +15,102 @@ export default function ChessTogether({ socketRef, matchedPeer }) {
   const [lastMove, setLastMove] = useState(null);
   const [highlightSquares, setHighlightSquares] = useState({});
 
+  const [selectedSquare, setSelectedSquare] = useState(null);
+
+
+  function handleSquareClick(square) {
+    const turn = chess.turn() === "w" ? "white" : "black";
+
+    // Not your turn
+    if (turn !== myColor) {
+      setSelectedSquare(null);
+      setHighlightSquares({});
+      return;
+    }
+
+    const piece = chess.get(square); // <- read piece on clicked square
+
+    // 🟡 No selected square yet → first click
+    if (!selectedSquare) {
+      if (!piece || piece.color !== (myColor[0])) {
+        // clicked empty square or opponent piece
+        return;
+      }
+
+      // highlight legal moves
+      const moves = chess.moves({ square, verbose: true });
+      const highlights = {};
+
+      moves.forEach(m => {
+        highlights[m.to] = {
+          background: "rgba(0,255,130,0.3)",
+          borderRadius: "50%",
+          boxShadow: "0 0 12px rgba(0,255,130,0.5)",
+        };
+      });
+
+      highlights[square] = {
+        background: "rgba(255,255,0,0.5)"
+      };
+
+      setSelectedSquare(square);
+      setHighlightSquares(highlights);
+      return;
+    }
+
+    // 🟢 If user clicked another one of THEIR pieces → switch selection
+    if (piece && piece.color === myColor[0]) {
+      const moves = chess.moves({ square, verbose: true });
+      const highlights = {};
+
+      moves.forEach(m => {
+        highlights[m.to] = {
+          background: "rgba(0,255,130,0.3)",
+          borderRadius: "50%",
+          boxShadow: "0 0 12px rgba(0,255,130,0.5)",
+        };
+      });
+
+      highlights[square] = {
+        background: "rgba(255,255,0,0.5)"
+      };
+
+      setSelectedSquare(square);
+      setHighlightSquares(highlights);
+      return;
+    }
+
+    // 🟣 Otherwise → attempt move
+    const move = chess.move({
+      from: selectedSquare,
+      to: square,
+      promotion: "q"
+    });
+
+    if (!move) {
+      // illegal move → reset
+      setSelectedSquare(null);
+      setHighlightSquares({});
+      return;
+    }
+
+    // Valid move → update game
+    setFen(chess.fen());
+    setTurnColor(chess.turn() === "w" ? "white" : "black");
+    setLastMove({ from: move.from, to: move.to });
+
+    sendMove({
+      from: move.from,
+      to: move.to,
+      promotion: move.promotion,
+    });
+
+    setSelectedSquare(null);
+    setHighlightSquares({});
+  }
+
+
+
   // Setup when paired
   useEffect(() => {
     if (!socketRef?.current || !matchedPeer) return;
@@ -79,47 +175,7 @@ export default function ChessTogether({ socketRef, matchedPeer }) {
     };
   }, [socketRef, chess]);
 
-  // Handle player dragging piece
-  function handleDrop(sourceSquare, targetSquare) {
-    console.log("DROP FIRED:", sourceSquare, "->", targetSquare);
-
-    const turn = chess.turn() === "w" ? "white" : "black";
-    if (turn !== myColor) {
-      console.log("Incorrect turn");
-      return false;
-    }
-
-    const move = chess.move({
-      from: sourceSquare,
-      to: targetSquare,
-      promotion: "q"
-    });
-
-    if (!move) {
-      console.log("Illegal move");
-      return false;
-    }
-
-    setFen(chess.fen());
-    setTurnColor(chess.turn() === "w" ? "white" : "black");
-    setLastMove({ from: move.from, to: move.to });
-
-    sendMove({
-      from: move.from,
-      to: move.to,
-      promotion: move.promotion,
-    });
-
-    if (!move) {
-      setHighlightSquares({});
-      return false;
-    }
-
-    setHighlightSquares({});
-
-    return true;
-  }
-
+  
 
   // Reset game for both
   function resetGame() {
@@ -156,31 +212,7 @@ export default function ChessTogether({ socketRef, matchedPeer }) {
   }, [fen, turnColor, myColor, chess]);
 
 
-  function handlePieceDragBegin(piece, sourceSquare) {
-    const moves = chess.moves({ square: sourceSquare, verbose: true });
-
-    if (moves.length === 0) {
-      setHighlightSquares({});
-      return;
-    }
-
-    const highlights = {};
-    moves.forEach(move => {
-  highlights[move.to] = {
-  background: "rgba(0,255,130,0.3)",
-  borderRadius: "50%",
-  boxShadow: "0 0 12px rgba(0,255,130,0.5)",
-};
-});
-
-
-    // Also highlight the selected square
-    highlights[sourceSquare] = {
-      background: "rgba(255, 255, 0, 0.5)",  // yellow highlight for selected
-    };
-
-    setHighlightSquares(highlights);
-  }
+  
 
 
   return (
@@ -208,11 +240,12 @@ export default function ChessTogether({ socketRef, matchedPeer }) {
         <Chessboard
           id="ChessBoard"
           customSquareStyles={highlightSquares}
-          onPieceDragBegin={handlePieceDragBegin}
+          
           position={fen}
-          onPieceDrop={handleDrop}
+          onSquareClick={handleSquareClick}
+          
           boardOrientation={myColor}
-          arePiecesDraggable={true}
+          arePiecesDraggable={false}
           animationDuration={200}
           customBoardStyle={{
             borderRadius: "12px",

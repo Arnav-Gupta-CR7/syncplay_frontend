@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Routes, Route, useNavigate, Outlet } from "react-router-dom";
 import TicTacToe from "./games/TicTacToe"; // example game component (below)
 import ChessTogether from "./games/ChessTogether";
+import JamBoardTogether from "./games/JamBoardTogether";
 
 export default function GameTogether({ socketRef, matchedPeer }) {
   const navigate = useNavigate();
@@ -71,14 +72,14 @@ export default function GameTogether({ socketRef, matchedPeer }) {
               {/* Trivia (placeholder) */}
               <div
                 className="p-4 bg-base-100 rounded-xl shadow hover:bg-base-200 cursor-pointer transition flex flex-col items-center"
-                onClick={() => openGame("trivia")}
+                onClick={() => openGame("jam-board")}
               >
                 <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2" className="mb-2">
                   <circle cx="20" cy="20" r="18" />
                   <path d="M20 28v-6" />
                   <circle cx="20" cy="14" r="1.5" fill="currentColor" />
                 </svg>
-                <span className="font-medium">Trivia (coming)</span>
+                <span className="font-medium">Jam Board</span>
               </div>
             </div>
           }
@@ -87,7 +88,7 @@ export default function GameTogether({ socketRef, matchedPeer }) {
         {/* nested game routes */}
         <Route path="tictactoe" element={<TicTacToe socketRef={socketRef} matchedPeer={matchedPeer} />} />
         <Route path="chess" element={<ChessTogether socketRef={socketRef} matchedPeer={matchedPeer} />} />
-        <Route path="trivia" element={<div className="p-6">Trivia coming soon</div>} />
+        <Route path="jam-board" element={<JamBoardTogether socketRef={socketRef} matchedPeer={matchedPeer} />} />
       </Routes>
 
       {/* Outlet (optional if you prefer to place nested Routes elsewhere) */}

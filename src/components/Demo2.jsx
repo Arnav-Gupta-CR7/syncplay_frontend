@@ -27,7 +27,7 @@ export default function Demo2({ navigate }) {
   const [messages, setMessages] = useState([]);
 
   const [remoteGlow, setRemoteGlow] = useState(false);
-
+  const [online, setOnline] = useState(0);
   
 
 
@@ -35,6 +35,11 @@ export default function Demo2({ navigate }) {
   useEffect(() => {
     // connect socket
     socketRef.current = io(SERVER_URL);
+
+    socketRef.current.on("online-count", (count) => {
+      setOnline(count);
+    });
+
 
     socketRef.current.on("chat-message", ({ from, message }) => {
       setMessages(prev => [...prev, { sender: "peer", text: message }]);
@@ -221,7 +226,7 @@ export default function Demo2({ navigate }) {
 
   return (
   <div className="w-full min-h-screen flex flex-col">
-    <Navbar />
+    <Navbar online={online}/>
 
     <div className="flex-1 w-full flex items-center justify-center p-2">
       <div className="w-full h-full max-w-7xl p-4 flex flex-col lg:flex-row gap-4">
@@ -232,6 +237,7 @@ export default function Demo2({ navigate }) {
             localVideoRef={localVideoRef}
             remoteVideoRef={remoteVideoRef}
             remoteGlow={remoteGlow}
+            status={status}
           />
 
           <div className="flex gap-3">
@@ -327,13 +333,13 @@ export default function Demo2({ navigate }) {
 
 
 
-function VideoSection({ localVideoRef, remoteVideoRef, remoteGlow }) {
+function VideoSection({ localVideoRef, remoteVideoRef, remoteGlow, status }) {
   return (
     <div className="w-full flex flex-col gap-4">
 
       {/* LOCAL */}
       <div className="card bg-base-100 shadow-md p-3">
-        <div className="mb-1 text-sm opacity-70">Local</div>
+        <div className="mb-1 text-sm opacity-70">You</div>
 
         <div className="w-full h-48 bg-black rounded-box overflow-hidden">
           <video
@@ -348,21 +354,31 @@ function VideoSection({ localVideoRef, remoteVideoRef, remoteGlow }) {
 
       {/* REMOTE */}
       <div className="card bg-base-100 shadow-md p-3">
-        <div className="mb-1 text-sm opacity-70">Remote</div>
+        <div className="mb-1 text-sm opacity-70">Stranger</div>
 
         <div
-          className={`
-            w-full h-48 bg-black rounded-box overflow-hidden transition-all
-            ${remoteGlow ? "neon-glow" : ""}
-          `}
-        >
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        </div>
+  className={`
+    relative
+    w-full h-48 bg-black rounded-box overflow-hidden transition-all
+    ${remoteGlow ? "neon-glow" : ""}
+  `}
+>
+  {/* REMOTE VIDEO */}
+  <video
+    ref={remoteVideoRef}
+    autoPlay
+    playsInline
+    className="w-full h-full object-cover"
+  />
+
+  {/* 🔥 OVERLAY WHEN SEARCHING FOR PARTNER */}
+  {status.includes("Searching") || status.includes("Waiting") ? (
+    <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <span className="loading loading-spinner loading-xl text-primary"></span>
+    </div>
+  ) : null}
+</div>
+
       </div>
 
     </div>

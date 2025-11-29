@@ -133,96 +133,78 @@ export default function YouTubeTogether({ socketRef, matchedPeer, initialVideoId
   }
 
   return (
-  <div
-    className="p-4 bg-base-200 rounded-box shadow relative w-full h-full"
-    ref={containerRef}
-  >
-    {/* Cursors */}
-    <div className="absolute inset-0 pointer-events-none">
-      <div
-        ref={localCursorRef}
-        className="absolute w-3 h-3 rounded-full bg-primary z-40"
-        style={{ transform: "translate(-50%, -50%)" }}
+  <div className="flex flex-col lg:flex-row gap-6">
+
+  {/* LEFT SIDE — Player */}
+  <div className="w-full lg:w-[640px]">
+    <div className="text-sm font-semibold mb-2">Watching Together</div>
+
+    <div className="w-full rounded-box overflow-hidden">
+      <YouTubeSyncPlayer
+        socketRef={socketRef}
+        matchedPeer={matchedPeer}
+        initialVideoId={selected}
       />
-      <div
-        ref={remoteCursorRef}
-        className="absolute w-3 h-3 rounded-full bg-error z-40"
-        style={{ transform: "translate(-50%, -50%)" }}
-      />
-    </div>
-
-    {/* LAYOUT */}
-    <div className="flex flex-col lg:flex-row gap-6">
-      
-      {/* LEFT SIDE — Search + Results */}
-      <div className="flex-1 min-w-full lg:min-w-[320px]">
-
-        {/* SEARCH BAR */}
-        <div className="flex gap-2 mb-3">
-          <input
-            className="input input-bordered w-full"
-            placeholder="Search YouTube..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && doSearch(query)}
-          />
-          <button className="btn btn-primary" onClick={() => doSearch(query)}>
-            Search
-          </button>
-        </div>
-
-        {/* RESULTS */}
-        <div className="max-h-[50vh] lg:max-h-96 overflow-auto space-y-2">
-
-          {loading && (
-            <div className="text-center py-3">
-              <span className="loading loading-spinner loading-md"></span>
-            </div>
-          )}
-
-          {!loading && results.length === 0 && (
-            <div className="text-xs text-gray-400 text-center">
-              No results yet.
-            </div>
-          )}
-
-          {results.map((it) => (
-            <div
-              key={it.videoId}
-              className="card card-side bg-base-100 shadow hover:bg-base-300 cursor-pointer transition"
-              onClick={() => selectVideo(it.videoId, true)}
-            >
-              <figure>
-                <img
-                  src={it.thumbnails?.default?.url || ""}
-                  className="w-24 h-16 object-cover"
-                />
-              </figure>
-              <div className="card-body p-3">
-                <h2 className="card-title text-sm line-clamp-2">
-                  {it.title}
-                </h2>
-                <p className="text-xs opacity-60">{it.channelTitle}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* RIGHT SIDE — Player */}
-      <div className="w-full lg:w-[640px]">
-        <div className="text-sm font-semibold mb-2">Watching Together</div>
-
-        <div className="w-full  rounded-box overflow-hidden">
-          <YouTubeSyncPlayer
-            socketRef={socketRef}
-            matchedPeer={matchedPeer}
-            initialVideoId={selected}
-          />
-        </div>
-      </div>
     </div>
   </div>
+
+  {/* RIGHT SIDE — Search + Results */}
+  <div className="flex-1 min-w-full lg:min-w-[320px]">
+
+    {/* SEARCH BAR */}
+    <div className="flex gap-2 mb-3">
+      <input
+        className="input input-bordered w-full"
+        placeholder="Search YouTube..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && doSearch(query)}
+      />
+      <button className="btn btn-primary" onClick={() => doSearch(query)}>
+        Search
+      </button>
+    </div>
+
+    {/* RESULTS */}
+    <div className="max-h-[50vh] lg:max-h-96 overflow-auto space-y-2">
+
+      {loading && (
+        <div className="text-center py-3">
+          <span className="loading loading-spinner loading-md"></span>
+        </div>
+      )}
+
+      {!loading && results.length === 0 && (
+        <div className="text-xs text-gray-400 text-center">
+          No results yet.
+        </div>
+      )}
+
+      {results.map((it) => (
+        <div
+          key={it.videoId}
+          className="card card-side bg-base-100 shadow hover:bg-base-300 cursor-pointer transition"
+          onClick={() => selectVideo(it.videoId, true)}
+        >
+          <figure>
+            <img
+              src={it.thumbnails?.default?.url || ""}
+              className="w-24 h-16 object-cover"
+            />
+          </figure>
+          <div className="card-body p-3">
+            <h2 className="card-title text-sm line-clamp-2">
+              {it.title}
+            </h2>
+            <p className="text-xs opacity-60">{it.channelTitle}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+</div>
+
 );
 
 }
