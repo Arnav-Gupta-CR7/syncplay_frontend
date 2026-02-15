@@ -32,11 +32,9 @@ export default function SandboxLayout({ socketRef, matchedPeer }) {
 
   return (
     <div className="flex flex-col w-full h-full">
-
       {/* HEADER */}
       <div className="border-b p-2 bg-base-100 shadow-sm">
         <div className="flex gap-2 overflow-x-auto no-scrollbar">
-
           <button
             onClick={() => switchTab("chat")}
             className={`btn btn-sm whitespace-nowrap ${
@@ -64,15 +62,14 @@ export default function SandboxLayout({ socketRef, matchedPeer }) {
             Game
           </button>
 
-          <button
+          {/* <button
             onClick={() => switchTab("music")}
             className={`btn btn-sm whitespace-nowrap ${
               activeTab === "music" ? "btn-primary" : "btn-outline"
             }`}
           >
             Music
-          </button>
-
+          </button> */}
         </div>
       </div>
 
